@@ -3,28 +3,49 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-public class passPortal : MonoBehaviour {
+public class portalScript : MonoBehaviour {
 
 	public Material[] mats;
 
 	const int inside = (int) CompareFunction.NotEqual;
 	const int outside = (int) CompareFunction.Equal;
 
+	public Transform device;
+	bool wasInside; // default to false
+	bool areInside;
+
 	// Use this for initialization
 	void Start () {
-		setMaterialMasks(outside);
+		setMaterials (false);
 	}// end Start
 
-	void OnTriggerStay(Collider other) {
-		if (other.name != "Main Camera")
-			return;
+	void setMaterials(bool fullRender) {
+		var stencilTest = fullRender ? inside : outside;
+		setMaterialMasks ((int)stencilTest);
+	}
 
-		if (transform.position.z > other.transform.position.z)
-			setMaterialMasks(outside);
-		else
-			setMaterialMasks(inside);
+	bool getIsInside() {
+		Vector3 pos = transform.InverseTransformPoint (device.position);
+		return pos.z >= 0? true: false;
+	}
+
+	void OnTriggerStay(Collider other) {
+		if (other.transform != device)
+			return;
+		bool isInFront = getIsInside ();
+		if ((isInFront && !wasInside) || (wasInside && !isInFront)) {
+			areInside = !areInside;
+			setMaterials (areInside);
+		}
+		wasInside = isInFront;
 	
 	}// end onCollide
+
+	void OnTriggerEnter(Collider other){
+		if (other.transform != device)
+			return;
+		wasInside = getIsInside ();
+	}
 
 	// setMaterialMasks
 	// helper function for onCollide
@@ -36,7 +57,7 @@ public class passPortal : MonoBehaviour {
 
 
 	void onDestroy() {
-		setMaterialMasks (inside);
+		setMaterials (true);
 	}
 
 	// Update is called once per frame
