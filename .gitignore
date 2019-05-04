@@ -4,6 +4,8 @@
 [Bb]uild/
 [Bb]uilds/
 Assets/AssetStoreTools*
+Assets/GoogleARCore*
+Assets/PlayServicesResolver
 
 # Visual Studio cache directory
 .vs/
